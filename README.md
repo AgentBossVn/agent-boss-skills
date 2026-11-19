@@ -25,6 +25,10 @@ Khi nhận việc, Agent sẽ tự làm các bước:
 - Đặt chữ quảng cáo lên ảnh.
 - Tự đóng vai khách hàng của bạn để xem lại ảnh rồi sửa tiếp, xong xuôi mới đưa bạn duyệt.
 
+## Skill này ra đời từ đâu?
+
+Skill này được đóng gói từ một ca thật: học viên lớp Marketing bán xe điện nhờ Agent làm ảnh quảng cáo, nhưng ảnh xấu và sai chi tiết xe. Agent Boss đã giao lại việc theo kiểu sếp, yêu cầu Agent làm tới khi có 9 ảnh đúng từng chi tiết như ảnh hãng, rồi gói cách làm thành skill này. Bạn có thể xem bộ slide kể lại từng lần giao việc và ảnh nhận được, ngay trên điện thoại, không cần đăng nhập: https://agentboss.vn/thu-vien/slide/tu-duy-dung-agent/xem
+
 ## Vẽ bằng gì và tốn bao nhiêu?
 
 **Xem ảnh ví dụ trước khi chọn: [cùng một sản phẩm, mỗi đường vẽ ra đẹp tới đâu](vi-du/README.md).** Muốn ảnh đẹp như ảnh chụp thì cần gói ChatGPT, gói Gemini hoặc trả tiền theo ảnh; chỉ dùng đường 0đ thì ảnh ra kém hẳn.
@@ -103,4 +107,6 @@ Tác giả: Agent Boss (Mai Xuân Đạt).
 
 ## Học thêm
 
-Nếu bạn muốn học cách tự xây Agent cho công việc của mình, mời bạn xem khoá học của Agent Boss tại https://agentboss.vn.
+Nếu muốn tự giao việc cho Agent làm cả marketing, bạn có thể xem lớp Agent Boss Marketing theo hình thức mua chung: 4 buổi Zoom buổi tối và 4 chặng thực hành, không dạy lập trình. Giá mua chung 890.000đ, đặt cọc 100.000đ giữ chỗ và được trừ vào học phí, đủ 200 người thì mở lớp: https://muachung.agentboss.vn/marketing?utm_source=skill-anh-quang-cao&utm_medium=github&utm_campaign=mua-chung-marketing
+
+Trang chính của Agent Boss: https://agentboss.vn

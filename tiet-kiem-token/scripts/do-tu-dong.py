@@ -67,28 +67,37 @@ def chay_py(ten, *doi, ra=None):
 
 
 def chua_giai_thich(out):
-    """Phần CHƯA CÓ TÊN: lượt đầu thật của phiên trừ phần nạp sẵn đọc được từ tệp. Số này tăng = có thứ mới
-    nạp vào mỗi phiên mà máy đo chưa biết (MCP mới, connector, phần nền đổi…) → cần xem / bổ sung máy đo."""
+    """Phần CHƯA CÓ TÊN của lượt đầu mỗi phiên. Ưu tiên máy tách lượt đầu (tach-luot-dau.json: phần "Còn lại");
+    không có thì cách cũ: lượt đầu thật trừ phần nạp sẵn đọc từ tệp. Số TĂNG = có thứ mới nạp mỗi phiên mà máy chưa biết."""
     try:
         d = json.loads((out / "so-lieu.json").read_text(encoding="utf-8"))
-        n = json.loads((out / "so-lieu-nap-san.json").read_text(encoding="utf-8"))
-        kd, co_ten = d.get("khoi_dong_trung_vi") or 0, n["uoc_token_tu_tep"]
-    except (OSError, ValueError, KeyError):
-        return
-    if not kd:
+    except (OSError, ValueError):
         return
     tn = d.get("tq_theo_nguon_luot") or {}
     khac = 100 * tn.get("khác", 0) / (sum(tn.values()) or 1)
-    d["chua_giai_thich"] = {"luot_dau_that": kd, "luot_dau_co_ten": co_ten, "luot_dau_chua_ro": max(0, kd - co_ten),
-                            "luot_dau_chua_ro_pct": round(100 * max(0, kd - co_ten) / kd, 1), "nguon_luot_khac_pct": round(khac, 1)}
+    try:
+        t = json.loads((out / "tach-luot-dau.json").read_text(encoding="utf-8"))
+        kd, con = t["tong_that_trung_vi"], max(0, t["nhom_trung_vi"]["Còn lại"])
+        d["luot_dau_tach"] = t
+        cach = f"máy tách lượt đầu (trung vị {t['so_phien']} phiên, chi tiết ở tach-luot-dau.md)"
+    except (OSError, ValueError, KeyError):
+        try:
+            n = json.loads((out / "so-lieu-nap-san.json").read_text(encoding="utf-8"))
+            kd = d.get("khoi_dong_trung_vi") or 0
+            con = max(0, kd - n["uoc_token_tu_tep"])
+        except (OSError, ValueError, KeyError):
+            return
+        cach = "lượt đầu thật trừ phần nạp sẵn đọc từ tệp"
+    if not kd:
+        return
+    d["chua_giai_thich"] = {"luot_dau_that": kd, "luot_dau_co_ten": kd - con, "luot_dau_chua_ro": con,
+                            "luot_dau_chua_ro_pct": round(100 * con / kd, 1), "nguon_luot_khac_pct": round(khac, 1)}
     (out / "so-lieu.json").write_text(json.dumps(d, ensure_ascii=False, indent=1), encoding="utf-8")
     c = d["chua_giai_thich"]
     with open(out / "thoi-quen.md", "a", encoding="utf-8") as f:
         f.write(f"\n## Phần chưa giải thích được (để biết máy đo còn sót gì)\n"
-                f"- Lượt đầu mỗi phiên: thật ~{kd / 1000:,.0f}k token, máy đọc được từ tệp ~{co_ten / 1000:,.0f}k → "
-                f"**chưa có tên ~{c['luot_dau_chua_ro'] / 1000:,.0f}k ({c['luot_dau_chua_ro_pct']:.0f}%)**. Gồm phần nền của agent "
-                f"(lời dặn hệ thống, mô tả công cụ), connector cài qua app, chỉ dẫn riêng từng dự án. Số này TĂNG giữa 2 lần đo "
-                f"= có thứ mới nạp vào mỗi phiên → gõ /context xem là gì.\n"
+                f"- Lượt đầu mỗi phiên: thật ~{kd / 1000:,.0f}k token, **chưa có tên ~{con / 1000:,.0f}k ({c['luot_dau_chua_ro_pct']:.0f}%)** "
+                f"(cách tính: {cach}). Số này TĂNG giữa 2 lần đo = có thứ mới nạp vào mỗi phiên → xem tach-luot-dau.md hoặc gõ /context.\n"
                 f"- Lượt AI không nhận ra ai khởi đầu: {khac:.0f}% token. Trên ~5% → máy đo đang sót 1 loại tin tự đến, nên báo người viết skill.\n")
 
 
@@ -111,8 +120,9 @@ def chay():
             continue
         da_do.append(agent)
     # nạp sẵn + "chưa giải thích" TRƯỚC khi so sánh: bước này ghi thêm vào so-lieu.json mà so sánh cần đọc
-    if "claude" in da_do and chay_py("do-phan-nap-san.py", "--du-an", str(Path.home()), "--json",
-                                     str(out / "so-lieu-nap-san.json"), ra=out / "nap-san.md"):
+    if "claude" in da_do:
+        chay_py("tach-luot-dau-phien.py", "--json", str(out / "tach-luot-dau.json"), ra=out / "tach-luot-dau.md")
+        chay_py("do-phan-nap-san.py", "--du-an", str(Path.home()), "--json", str(out / "so-lieu-nap-san.json"), ra=out / "nap-san.md")
         chua_giai_thich(out)
     for agent, may, js, md in viec:
         if agent not in da_do:

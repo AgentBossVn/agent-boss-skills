@@ -4,9 +4,12 @@ mô tả skill / agent, máy chủ MCP, hook. Chỉ đếm ký tự + tên; KHÔ
 
 Dùng: python3 do-phan-nap-san.py [--du-an <thư mục dự án>] [--goc ~/.claude] [--hien-noi-dung]
 Mặc định GIẤU: tên skill/MCP riêng chỉ đếm + độ dài, đường dẫn CLAUDE.md rút gọn theo loại. --hien-noi-dung để tự xem, đừng chia sẻ.
-Ước token = ký tự / 3,5 (tiếng Việt có dấu ra nhiều token hơn tiếng Anh — chỉ để so nặng nhẹ)."""
+Ước token theo loại chữ (uoc_token.py): ASCII ~3,8 ký tự/token, tiếng Việt có dấu ~1,7 — chỉ để so nặng nhẹ."""
 import argparse, json, os, re, sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from uoc_token import uoc_token  # noqa: E402
 
 sys.stdout.reconfigure(encoding="utf-8")
 
@@ -24,6 +27,14 @@ if not GOC.is_dir():
 CAU_HINH = list(dict.fromkeys([GOC, (DU_AN / ".claude").resolve()]))
 RE_IMPORT = re.compile(r"(?:^|\s)@(~?[\w./-]+\.md)\b")
 RE_MOTA = re.compile(r"^description:\s*(.+?)(?=^\w[\w-]*:|^---)", re.M | re.S)
+
+
+class N(int):
+    """Số ký tự, kèm .tok = ước token theo loại chữ (tiếng Việt nặng hơn tiếng Anh)."""
+    def __new__(cls, text):
+        o = int.__new__(cls, len(text))
+        o.tok = uoc_token(text)
+        return o
 
 
 def json_dict(tep):
@@ -49,7 +60,7 @@ def claude_md(p, da=None):
         return []
     da.add(p)
     t = doc(p)
-    ra = [(str(p), len(t))]
+    ra = [(str(p), N(t))]
     for im in RE_IMPORT.findall(t):
         q = (p.parent / im).expanduser() if not im.startswith(("~", "/")) else Path(im).expanduser()
         ra += [(f, n) for f, n in claude_md(q, da)] if q.is_file() else []
@@ -62,7 +73,7 @@ def mo_ta(thu_muc, mau):
     for p in sorted(Path(thu_muc).glob(mau)):
         m = RE_MOTA.search(doc(p).split("\n---", 2)[0] + "\n---")
         if m:
-            ra.append((p.parent.name if p.name == "SKILL.md" else p.stem, len(m.group(1).strip())))
+            ra.append((p.parent.name if p.name == "SKILL.md" else p.stem, N(m.group(1).strip())))
     return ra
 
 
@@ -124,7 +135,7 @@ def plugin_dang_dung():
     return skill, sorted(set(may_chu)), n_hook
 
 
-tk = lambda c: f"~{c / 3.5 / 1000:,.1f}k token"
+tk = lambda ds: f"~{sum(n.tok for _, n in ds) / 1000:,.1f}k token"
 md = claude_md(GOC / "CLAUDE.md") + sum((claude_md(p) for p in sorted((GOC / "rules").rglob("*.md"))), [])
 cha = DU_AN
 while True:  # CLAUDE.md của dự án và mọi thư mục cha (Claude Code đọc cả)
@@ -134,6 +145,12 @@ while True:  # CLAUDE.md của dự án và mọi thư mục cha (Claude Code đ
     if cha.parent == cha:
         break
     cha = cha.parent
+ma_du_an = re.sub(r"[/.]", "-", str(DU_AN))  # mã thư mục của Claude Code cho dự án này
+tep_tn = GOC / "projects" / ma_du_an / "memory" / "MEMORY.md"
+if not tep_tn.is_file() and "/.claude/worktrees/" in DU_AN.as_posix():  # worktree dùng trí nhớ của kho gốc
+    tep_tn = GOC / "projects" / re.sub(r"[/.]", "-", DU_AN.as_posix().split("/.claude/worktrees/")[0]) / "memory" / "MEMORY.md"
+if tep_tn.is_file():  # trí nhớ tự động của dự án (mục lục nạp sẵn mỗi phiên)
+    md += [(str(tep_tn), N(doc(tep_tn)))]
 md = list(dict(md).items())
 sk = sum((mo_ta(c / "skills", "*/SKILL.md") for c in CAU_HINH), [])
 pl = mo_ta(GOC / "plugins", "**/skills/*/SKILL.md")  # có thể gồm plugin đã tải mà chưa bật
@@ -152,6 +169,8 @@ def loai_tep(f):
         return "CLAUDE.md toàn cục"
     if GOC / "rules" in p.parents:
         return "tệp rules"
+    if p.name == "MEMORY.md" and GOC / "projects" in p.parents:
+        return "trí nhớ tự động của dự án"
     if p.name in ("CLAUDE.md", "CLAUDE.local.md"):
         return "CLAUDE.md dự án"
     return "tệp @import khác"
@@ -159,11 +178,11 @@ def loai_tep(f):
 
 print(f"# Phần nạp sẵn đầu phiên — dự án {str(DU_AN).replace(str(Path.home()), '~') if HIEN else '(ẩn)'}\n")
 print(f"| Khối | số mục | ký tự | ước |\n|---|---|---|---|")
-print(f"| CLAUDE.md + rules + @import | {len(md)} | {c_md:,} | {tk(c_md)} |")
-print(f"| Mô tả skill | {len(sk)} | {c_sk:,} | {tk(c_sk)} |")
-print(f"| Mô tả skill của plugin (gồm cả plugin chưa bật — ước TRẦN) | {len(pl)} | {sum(n for _, n in pl):,} | {tk(sum(n for _, n in pl))} |")
-print(f"| Mô tả agent (trợ lý con tự tạo) | {len(ag)} | {c_ag:,} | {tk(c_ag)} |")
-print(f"| Mô tả skill của plugin ĐÃ BẬT (đọc từ plugins/installed_plugins.json) | {len(sk_pl)} | {sum(n for _, n in sk_pl):,} | {tk(sum(n for _, n in sk_pl))} |")
+print(f"| CLAUDE.md + rules + @import + trí nhớ tự động dự án | {len(md)} | {c_md:,} | {tk(md)} |")
+print(f"| Mô tả skill | {len(sk)} | {c_sk:,} | {tk(sk)} |")
+print(f"| Mô tả skill của plugin (gồm cả plugin chưa bật — ước TRẦN) | {len(pl)} | {sum(n for _, n in pl):,} | {tk(pl)} |")
+print(f"| Mô tả agent (trợ lý con tự tạo) | {len(ag)} | {c_ag:,} | {tk(ag)} |")
+print(f"| Mô tả skill của plugin ĐÃ BẬT (đọc từ plugins/installed_plugins.json) | {len(sk_pl)} | {sum(n for _, n in sk_pl):,} | {tk(sk_pl)} |")
 print(f"| Máy chủ MCP trong cấu hình + plugin (mỗi cái thêm mô tả công cụ) | {len(m) + len(m_pl)} | — | xem /context |")
 print(f"| Hook đang cài (trong cấu hình) | {hook()} | — | mỗi lần hook chặn = 1 lượt làm lại |")
 print(f"| Hook do plugin mang vào (chỉ đếm tệp hooks/hooks.json; hook khai thẳng trong plugin.json thì chưa gồm) | {hook_pl} | — | — |")
@@ -190,8 +209,7 @@ else:
     if m or m_pl:
         print(f"\n## Máy chủ MCP: {len(m) + len(m_pl)} (tên đã ẩn)")
 if A.json:
-    c_pl = sum(n for _, n in sk_pl)
-    Path(A.json).write_text(json.dumps({"uoc_token_tu_tep": round((c_md + c_sk + c_ag + c_pl) / 3.5),
+    Path(A.json).write_text(json.dumps({"uoc_token_tu_tep": round(sum(n.tok for _, n in md + sk + ag + sk_pl)),
                                         "so_mcp": len(m) + len(m_pl)}), encoding="utf-8")
 print("\nConnector cài qua app desktop / claude.ai không có trên đĩa nên máy không đọc được — số MCP có thể thiếu.")
 print("\nĐối chiếu số THẬT: gõ /context trong Claude Code (đếm chính xác từng khối).")

@@ -22,7 +22,7 @@ Dùng được với agent BẤT KỲ (Claude Code, Codex, Gemini CLI…) trên 
 |---|---|---|
 | 0. Có cần AI không | Việc này có luật cố định (đếm, chép, đăng, đổi định dạng) — dựng máy/script chạy 0 token được không? | Việc lặp trong nhật ký (câu người gõ lặp, phiên giống nhau), danh sách máy tự chạy |
 | 1. Model & mức suy nghĩ | Có dùng model đắt / suy nghĩ tối đa cho việc nhỏ? | thoi-quen mục 7–8, bảng trợ lý con theo model |
-| 2. Ngữ cảnh | Nạp sẵn đầu phiên nặng? Phiên ôm nhiều việc? Bỏ đi quá hạn AI nhớ tạm rồi quay lại? Đổi model giữa phiên? | phan-nap-san; thoi-quen mục 1–5 |
+| 2. Ngữ cảnh | Nạp sẵn đầu phiên nặng? Phiên ôm nhiều việc? Bỏ đi quá hạn AI nhớ tạm rồi quay lại? Đổi model giữa phiên? | tach-luot-dau-phien (lượt đầu tách từng phần); phan-nap-san; thoi-quen mục 1–5 |
 | 3. Công cụ | Lệnh đổ hàng nghìn dòng? Đọc lại cùng tệp? Nhiều MCP bật sẵn? Dán nhiều ảnh? | thoi-quen: công cụ trả về nhiều chữ, đọc lại tệp, ảnh; phan-nap-san: MCP |
 | 4. Trợ lý con | Giao trợ lý con cho việc nhỏ? Loại nào ngốn nhất? | bảng trợ lý con theo loại |
 | 5. Cách giao việc + tin tự đến | Việc trái mục tiêu? Đổi quyết định giữa chừng? Giao thiếu rõ / thiếu ngữ cảnh / chung chung, bổ sung sau? Nói chuyện không giao việc (khen, chê, tâm sự)? Bao nhiêu lượt AI do trợ lý con, chốt, hook đánh thức (mỗi lượt đọc lại cả phiên)? | mục "Ai khởi đầu lượt AI", Stop hook, hook chặn, lệnh sleep, câu ngắn lặp; danh mục mục E–F; **agent tự soi (Bước 2b)** |
@@ -48,6 +48,7 @@ Có `~/tiet-kiem-token/theo-doi.json` → đọc trước mọi việc: trang th
 S=<thư mục skill này>/scripts
 OUT=$(python3 "$S/do-tu-dong.py" thu-muc-hom-nay)   # tạo + in thư mục kết quả hôm nay (thay `date +%F`)
 python3 "$S/do-tu-dong.py" chay --ngay 7     # đo Claude Code + Codex (cái nào có nhật ký), ghi sổ, vẽ trang
+python3 "$S/tach-luot-dau-phien.py" > "$OUT/tach-luot-dau.md"   # lượt đầu mỗi phiên tách từng phần (lời dặn hệ thống, công cụ, MCP, CLAUDE.md, skill, agent, hook); `chay` đã tự gọi
 python3 "$S/do-phan-nap-san.py" --du-an "<thư mục dự án hay làm>" > "$OUT/phan-nap-san.md"
 python3 "$S/do-cho-goi-ai-trong-code.py" <thư mục code 1> [thư mục 2…] > "$OUT/cho-goi-ai.md"
 ```
@@ -123,9 +124,10 @@ Skill đang ở bản thử 0.9 (xem `CHANGELOG.md`). Mỗi máy lộ ra thứ n
 Đưa người dùng đường gửi: https://github.com/AgentBossVn/agent-boss-skills/issues/new (dán mục trên vào). Agent KHÔNG tự gửi; người dùng xem rồi tự bấm.
 
 ## Ghi chú kỹ thuật
+- `tach-luot-dau-phien`: ước token từng phần theo loại chữ (ASCII ~3,8 ký tự/token, tiếng Việt có dấu ~1,7, chỉnh theo /context) rồi hiệu chỉnh cho khớp token thật lượt đầu; hệ số hiệu chỉnh lệch xa 1,00 = ước chưa sát. Đọc bảng: phần nào to nhất thì sửa phần đó (hook chèn nhiều chữ, MCP nhiều công cụ, skill/agent nhiều mô tả). Cần nhật ký có `api-request-shape`; bản cũ không có thì dùng /context.
 - Nhật ký: `<CLAUDE_CONFIG_DIR hoặc ~/.claude>/projects/<dự án>/<phiên>.jsonl`, trợ lý con ở `<phiên>/subagents/`. Claude Code tự xoá nhật ký cũ (mặc định ~30 ngày, `cleanupPeriodDays`).
 - Chỉ đo được máy đang chạy; nhiều máy thì chạy từng máy. Không đo claude.ai / chatgpt.com trên web dù dùng chung hạn mức.
 - Codex: đọc dòng `token_usage_record` (bản cũ: `token_count`) trong `~/.codex/sessions` + `archived_sessions`; chưa tách trợ lý con, chưa có các thói quen như máy đo Claude.
-- Đã biết chưa xử lý: "nghỉ quá hạn" có thể đếm cả khoảng lặng do công cụ chạy lâu; `phan-nap-san` chưa đếm trí nhớ tự động dự án, hook khai thẳng trong plugin.json, connector cài qua app desktop/claude.ai (không có trên đĩa: số MCP có thể thiếu), và phần nền của Claude Code (lời dặn hệ thống + công cụ có sẵn) nên tổng nhỏ hơn lượt đầu thật; loại trùng tin theo từng tệp nên phiên mở lại/tách nhánh bị đếm dư ~2%; máy dò code chỉ nhận theo mẫu chữ (có thể sót cách gọi lạ, hoặc tính cả tệp cũ không còn chạy; tự bỏ qua thư mục của skill, tệp test, dòng chú thích; whisper.cpp/faster-whisper chạy máy = 0đ nên tách riêng; báo thêm tệp gọi Anthropic/OpenAI chưa thấy max_tokens).
+- Đã biết chưa xử lý: "nghỉ quá hạn" có thể đếm cả khoảng lặng do công cụ chạy lâu; `phan-nap-san` hook khai thẳng trong plugin.json, connector cài qua app desktop/claude.ai (không có trên đĩa: số MCP có thể thiếu), và phần nền của Claude Code (lời dặn hệ thống + công cụ có sẵn) nên tổng nhỏ hơn lượt đầu thật; loại trùng tin theo từng tệp nên phiên mở lại/tách nhánh bị đếm dư ~2%; máy dò code chỉ nhận theo mẫu chữ (có thể sót cách gọi lạ, hoặc tính cả tệp cũ không còn chạy; tự bỏ qua thư mục của skill, tệp test, dòng chú thích; whisper.cpp/faster-whisper chạy máy = 0đ nên tách riêng; báo thêm tệp gọi Anthropic/OpenAI chưa thấy max_tokens).
 - Máy đo có `--goc` trỏ sai/không có nhật ký → báo lỗi + thoát mã 2 (không in bảng toàn số 0). `do-thoi-quen-token.py --hien-du-an` mở tên dự án nhưng vẫn giấu câu người gõ và đường dẫn. Giá nhớ tạm mọi bản `fable` đang áp mức Fable 5.2 (ƯỚC). Bộ kiểm: `python3 -B -m unittest discover -s tests` (nhật ký mẫu giả, không dữ liệu thật).
 - Đối chiếu tiền theo giá API: công cụ cộng đồng `ccusage` (bên thứ ba, ước theo bảng giá LiteLLM). CHỈ gợi ý cho người dùng tự cân nhắc; Agent không tự cài/chạy khi người dùng chưa đồng ý.

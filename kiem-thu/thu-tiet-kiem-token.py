@@ -91,7 +91,8 @@ def thu_thoi_quen(tam: Path):
     ma2, out2, _ = chay('do-thoi-quen-token.py', '--ngay', 7, '--goc', goc, '--hien-noi-dung')
     khang_dinh(ma2 == 0 and 'kiểm kê token giúp tôi' in out2, '--hien-noi-dung mới hiện câu người gõ')
     ma3, out3, err3 = chay('do-thoi-quen-token.py', '--ngay', 7, '--goc', tam / 'khong-co')
-    khang_dinh(ma3 in (0, 1) and 'Traceback' not in err3 + out3, 'thư mục trống: báo gọn, không vỡ', err3)
+    khang_dinh(ma3 == 2 and 'Traceback' not in err3 + out3 and 'Kiểm tra lại --goc' in err3 + out3,
+               'thư mục trống: báo lỗi rõ (mã 2), không ra bảng toàn số 0', err3)
 
 
 def thu_nap_san(tam: Path):
@@ -104,7 +105,9 @@ def thu_nap_san(tam: Path):
     (goc / 'settings.json').write_text(json.dumps({'env': {'API_KEY': 'BI-MAT-KHONG-DUOC-IN'}}), encoding='utf-8')
     ma, out, err = chay('do-phan-nap-san.py', '--goc', goc, '--du-an', tam)
     khang_dinh(ma == 0, 'chạy xong', err)
-    khang_dinh('CLAUDE.md' in out and 'mot-skill' in out, 'đếm được CLAUDE.md + mô tả skill', out[:600])
+    khang_dinh('CLAUDE.md' in out and 'mot-skill' not in out, 'mặc định đếm được CLAUDE.md và GIẤU tên skill', out[:600])
+    ma2, out2, err2 = chay('do-phan-nap-san.py', '--goc', goc, '--du-an', tam, '--hien-noi-dung')
+    khang_dinh(ma2 == 0 and 'CLAUDE.md' in out2 and 'mot-skill' in out2, '--hien-noi-dung hiện tên skill', out2[:600])
     khang_dinh('BI-MAT-KHONG-DUOC-IN' not in out + err, 'không in giá trị khoá trong cấu hình')
 
 

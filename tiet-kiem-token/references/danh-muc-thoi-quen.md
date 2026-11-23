@@ -51,6 +51,37 @@ Cột đo = trường trong ~/.claude/projects/*/*.jsonl. Đã kiểm tra trên 
 
 Mô hình tính chi phí từ nhật ký: cost_lượt = input×p_in + cache_creation×p_ghi (tách 5m/1h) + cache_read×p_đọc + output×p_out, theo `message.model`. Dòng `model:"<synthetic>"` toàn 0: bỏ qua.
 
+## E. Thói quen của NGƯỜI GIAO VIỆC (thường tốn nhất, máy đo chỉ thấy một phần)
+
+Mỗi tin nhắn = AI đọc lại TOÀN BỘ phiên. Mỗi việc làm rồi bỏ = trả tiền 2 lần. Máy đo thấy được lượt sửa có từ khoá ("sai rồi", "làm lại", "bổ sung"…) qua mục "người gõ: sửa / đổi ý / bổ sung"; còn lại phải để agent TỰ SOI (SKILL.md Bước 2b) vì chỉ agent biết việc nào trái ý chủ.
+
+| # | Thói quen | Vì sao tốn | Dấu hiệu | Cách sửa |
+|---|---|---|---|---|
+| 21 | Làm việc trái / không phục vụ mục tiêu | Toàn bộ token của việc đó là phí, kể cả khi làm "đúng" | việc không gắn mục tiêu nào chủ đã nói; làm xong không ai dùng | Đầu việc agent đối chiếu mục tiêu, lệch thì hỏi 1 câu trước khi làm |
+| 22 | Đổi quyết định giữa chừng, không tính từ đầu | Phần đã làm bỏ đi + làm lại + phiên phình thêm phần cũ | câu "đổi ý", "thôi bỏ", "hoá ra"; tệp sửa đi sửa lại | Nghĩ xong mới giao; việc chưa chắc thì làm bản nháp nhỏ / hỏi phản biện trước |
+| 23 | Giao việc không rõ: thiếu mục tiêu, thiếu tiêu chí "xong", thiếu ràng buộc | Agent đoán, làm sai, phải hỏi đi hỏi lại | agent hỏi lại nhiều; chủ phải nhắn "không phải thế" | Giao đủ 5 ý: làm gì · để làm gì · xong là thế nào · cấm gì · nằm ở đâu |
+| 24 | Bổ sung yêu cầu sau khi agent đã làm xong | Làm lại một phần, đọc lại cả phiên mỗi lần bổ sung | câu "à mà", "thêm nữa", "quên chưa nói" ngay sau lượt agent báo xong | Gom hết yêu cầu trước khi gửi; đọc lại tin 1 lượt trước khi bấm gửi |
+| 25 | Thiếu ngữ cảnh, mô tả vấn đề không đủ | Agent đi tìm, đọc rộng, đoán sai hướng | nhiều lượt Grep/Read/WebSearch đầu việc; kết luận sai rồi quay lại | Đưa sẵn: tệp nào, lỗi hiện gì, đã thử gì, ảnh/đoạn log đúng chỗ |
+| 26 | Yêu cầu chung chung ("làm cho đẹp", "tối ưu đi") | Agent làm rộng, làm nhiều phương án, chủ chọn rồi sửa | đầu ra dài, nhiều vòng chỉnh | Nói cụ thể 1 việc + đưa ví dụ mẫu / đầu ra mong muốn |
+| 27 | Không đưa ví dụ mẫu khi cần đúng khuôn | Nhiều vòng chỉnh tới đúng khuôn | sửa cùng tệp nhiều lượt chỉ vì trình bày | Đưa 1 bản mẫu có sẵn để agent bắt chước |
+| 28 | Việc lớn không lập kế hoạch trước | Đi sai xa mới phát hiện, làm lại nhiều | sửa nhiều tệp rồi revert | Bảo agent lập kế hoạch ngắn, duyệt rồi mới làm |
+| 29 | Hỏi vặt / tán gẫu trong phiên đang làm việc lớn | Mỗi câu đọc lại cả phiên to | câu ngắn không liên quan việc chính trong phiên dài | Hỏi vặt ở phiên mới / cửa sổ riêng |
+| 30 | Giục "xong chưa", duyệt từng bước nhỏ | Mỗi tin = 1 lần đọc lại cả phiên | nhiều câu ngắn lặp ("tiếp đi", "sao rồi") | Giao trọn việc, để agent báo khi xong |
+| 31 | Không ghi lại quyết định đã chốt | Phiên sau phải giải thích lại, agent làm theo ý cũ | chủ lặp lại cùng một giải thích ở nhiều phiên | Ghi quyết định vào 1 tệp sổ ngắn agent đọc khi cần (không nhồi vào tệp nạp sẵn) |
+| 32 | Bắt agent nhìn ảnh chụp màn hình khi đọc chữ được | Ảnh nặng hơn chữ nhiều lần | nhiều ảnh trong phiên | Dán chữ/lỗi dạng chữ; agent đọc trang bằng công cụ đọc chữ |
+| 37 | Nói chuyện không giao việc với agent: tâm sự, khen, cảm ơn, chê, chửi, chào hỏi | Mỗi câu = AI đọc lại cả phiên chỉ để đáp lời xã giao; câu chửi/chê còn khiến agent xin lỗi, giải thích dài, đôi khi sửa bừa | mục "người gõ: khen / chê / tán gẫu" (máy chỉ bắt câu thuần xã giao, ngắn); câu "cảm ơn" cuối phiên to | Không cần cảm ơn khi xong (đóng phiên luôn); muốn tâm sự / hỏi vu vơ thì mở phiên mới nhỏ; bực thì nói rõ SAI CHỖ NÀO, muốn kết quả gì, thay vì chê chung |
+
+## F. Tin tự đến: AI đọc lại cả phiên dù chủ không gõ gì
+
+Mỗi lần trợ lý con báo về, phiên khác nhắn sang, chốt (hook) bắt làm lại, tin CI, lịch hẹn giờ… phiên nhận được đánh thức và chạy 1 lượt mới, tức đọc lại TOÀN BỘ phiên (đọc lại thứ AI còn nhớ tạm rẻ, nhưng phiên to thì vẫn lớn; quá hạn nhớ tạm thì giá đầy đủ). Máy đo ghi ở mục "Ai khởi đầu lượt AI" (đo 7 ngày trên máy tác giả 23/11/2026: ~43% token phiên chính đến từ lượt không do người gõ: trợ lý con/phiên khác báo về 25%, chốt bắt làm lại 9%).
+
+| # | Thói quen | Cách sửa |
+|---|---|---|
+| 33 | Nhiều trợ lý con chạy nền, mỗi con báo về đánh thức phiên chính | Gộp việc liên quan vào 1 trợ lý con; chờ tất cả xong rồi đọc 1 lần |
+| 34 | Chốt (Stop hook) bắt làm lại nhiều lần | Xem chốt nào bắt nhiều nhất (mục Hook chặn); sửa luật chốt cho đúng việc thật, đừng để nó bắt lặp |
+| 35 | Hook in dài mỗi lượt / mỗi lần gọi công cụ | Hook chỉ in khi cần, in 1 dòng |
+| 36 | Phiên song song nhắn qua lại, theo dõi CI tự báo vào phiên to | Để thông báo đi vào phiên nhỏ riêng, hoặc chỉ báo khi lỗi |
+
 ## D. Thuê bao vs API
 
 - API/Console: tính tiền theo token ở bảng giá trên; `/usage` hiện chi phí ước tính (tính cục bộ theo giá niêm yết). [CC costs]

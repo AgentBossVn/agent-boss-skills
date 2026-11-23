@@ -203,11 +203,22 @@ Về an toàn và riêng tư:
 
 Bạn cần:
 
-- Claude Code trên Mac, Windows hoặc Linux.
+- Claude Code hoặc Codex trên Mac, Windows hoặc Linux.
 - Python 3.8 trở lên.
 - Không cần cài thêm gì.
 
-Phần đọc nhật ký chỉ dành cho Claude Code. Với Codex hoặc Antigravity, bạn chỉ dùng được phần dò code.
+### Bản 0.9 (bản thử) có gì mới
+
+- Đo được nhật ký của cả Codex và Claude Code. Với các Agent khác như Gemini CLI, Antigravity... bạn chỉ dùng được phần dò code, vì skill chưa đo được nhật ký.
+- Cho biết mỗi lượt AI do ai khởi đầu: bạn gõ, trợ lý con báo về, hook bắt làm lại hay máy tự chạy. Lượt nào AI cũng đọc lại cả cuộc trò chuyện. Đo thử trên máy tác giả trong 7 ngày, khoảng 43% token đến từ những lượt bạn không gõ gì.
+- Đếm số lượt bạn phải sửa, thay đổi ý, bổ sung yêu cầu, cùng những lượt chỉ khen, chê hoặc tán gẫu với AI. Con số được ước theo từ khoá, nên đây là mức thấp nhất.
+- Liệt kê các thói quen giao việc gây tốn token: giao không rõ, thiếu ngữ cảnh, thay đổi quyết định giữa chừng, bổ sung sau khi AI đã làm...
+- Agent tự trả lời 4 câu hỏi về những chỗ phí token mà máy đo không thấy, ví dụ việc đã làm rồi bỏ.
+- Mỗi mục trong báo cáo có 3 lớp: con số, giải thích kỹ thuật và giải thích đời thường.
+- Có trang theo dõi trước và sau khi sửa, kèm lịch tự đo lại mỗi tuần. Agent sẽ hỏi bạn trước khi đặt lịch.
+- Có dòng “phần chưa giải thích được”. Số này cao hoặc tăng nghĩa là máy đo còn bỏ sót thứ gì đó.
+
+Góp ý giúp skill tốt hơn: Đây là bản thử. Cuối mỗi báo cáo, Agent sẽ soạn sẵn mục góp ý, đã bỏ câu bạn gõ, tên dự án và đường dẫn. Bạn xem lại rồi dán vào https://github.com/AgentBossVn/agent-boss-skills/issues/new. Mỗi máy sẽ lộ ra những thứ tác giả chưa thấy, nên góp ý của bạn sẽ giúp skill tốt lên. Khi có bản mới, bạn cập nhật bằng cách cài lại skill từ kho.
 
 Cách cài:
 

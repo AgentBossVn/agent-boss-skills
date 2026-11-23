@@ -1,4 +1,4 @@
-# Thế giới nói gì về tiết kiệm token — phần khung 8 tầng còn thiếu (21/11/2026)
+# Thế giới nói gì về tiết kiệm token — phần bổ sung cho khung 9 tầng (0–8) (21/11/2026)
 
 Nguồn chính hãng (Anthropic, Cursor, OpenAI, Google) xếp trên blog/vendor. Giá và số đo có thể đổi. Ghi "vendor" = số do bên bán công cụ tự công bố.
 
@@ -41,5 +41,3 @@ Nguồn chính hãng (Anthropic, Cursor, OpenAI, Google) xếp trên blog/vendor
 - Giá OpenAI/Google đổi nhanh; tên model trong các nguồn lệch nhau: kiểm trang giá hiện hành.
 
 Câu hỏi mở: ngưỡng cache hit rate "tốt" của Claude Code; có số đo độc lập cho Aider repo map/Cline không; cost attribution theo khách trong Langfuse.
-
-Trạng thái: DONE_WITH_CONCERNS

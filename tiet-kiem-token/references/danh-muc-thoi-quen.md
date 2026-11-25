@@ -69,6 +69,7 @@ Mỗi tin nhắn = AI đọc lại TOÀN BỘ phiên. Mỗi việc làm rồi b�
 | 30 | Giục "xong chưa", duyệt từng bước nhỏ | Mỗi tin = 1 lần đọc lại cả phiên | nhiều câu ngắn lặp ("tiếp đi", "sao rồi") | Giao trọn việc, để agent báo khi xong |
 | 31 | Không ghi lại quyết định đã chốt | Phiên sau phải giải thích lại, agent làm theo ý cũ | chủ lặp lại cùng một giải thích ở nhiều phiên | Ghi quyết định vào 1 tệp sổ ngắn agent đọc khi cần (không nhồi vào tệp nạp sẵn) |
 | 32 | Bắt agent nhìn ảnh chụp màn hình khi đọc chữ được | Ảnh nặng hơn chữ nhiều lần | nhiều ảnh trong phiên | Dán chữ/lỗi dạng chữ; agent đọc trang bằng công cụ đọc chữ |
+| 38 | Giao AI làm đi làm lại việc theo luật cố định (người dùng, máy tự chạy, hoặc agent giao trợ lý con) | Mỗi lần AI đọc lại lời giao + ngữ cảnh rồi suy nghĩ lại từ đầu cho việc một script làm được | `do-viec-nen-viet-may`: nhóm việc lặp ≥3 lần, tq mỗi lần | Nhờ agent viết công cụ/script 1 lần, chạy bằng lịch máy (0 token); chỉ khúc cần hiểu chữ mới gọi AI rẻ (SKILL.md Bước 2c) |
 | 37 | Nói chuyện không giao việc với agent: tâm sự, khen, cảm ơn, chê, chửi, chào hỏi | Mỗi câu = AI đọc lại cả phiên chỉ để đáp lời xã giao; câu chửi/chê còn khiến agent xin lỗi, giải thích dài, đôi khi sửa bừa | mục "người gõ: khen / chê / tán gẫu" (máy chỉ bắt câu thuần xã giao, ngắn); câu "cảm ơn" cuối phiên to | Không cần cảm ơn khi xong (đóng phiên luôn); muốn tâm sự / hỏi vu vơ thì mở phiên mới nhỏ; bực thì nói rõ SAI CHỖ NÀO, muốn kết quả gì, thay vì chê chung |
 
 ## F. Tin tự đến: AI đọc lại cả phiên dù chủ không gõ gì

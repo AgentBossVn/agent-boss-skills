@@ -207,6 +207,12 @@ Bạn cần:
 - Python 3.8 trở lên.
 - Không cần cài thêm gì.
 
+### Bản 0.10 (bản thử) có gì mới
+
+- Skill tìm những việc bạn, máy tự chạy hoặc trợ lý con đã làm từ 3 lần trở lên trong tuần, kèm số lần lặp lại và lượng token tốn cho mỗi lần.
+- Với từng việc, Agent sẽ đề xuất cách xử lý phù hợp: việc theo luật cố định thì viết công cụ chạy gần như không tốn token; việc phần lớn theo luật thì để công cụ xử lý phần đó, chỉ gọi AI rẻ ở đoạn cần hiểu chữ; việc cần phán đoán thì vẫn giữ AI.
+- Agent ước tính số tuần cần để hòa vốn, dựa trên lượng token tốn một lần để viết công cụ và lượng token bớt được mỗi tuần. Chỉ khi bạn đồng ý, Agent mới bắt đầu làm.
+
 ### Bản 0.9 (bản thử) có gì mới
 
 - Đo được nhật ký của cả Codex và Claude Code. Với các Agent khác như Gemini CLI, Antigravity... bạn chỉ dùng được phần dò code, vì skill chưa đo được nhật ký.

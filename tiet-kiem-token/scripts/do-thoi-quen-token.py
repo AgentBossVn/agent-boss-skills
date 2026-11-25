@@ -36,6 +36,10 @@ RE_SLEEP = re.compile(r"(^|[;&|\s(])sleep\s+\d")
 RE_HOOK = re.compile(r"([\w.-]+\.(?:cjs|js|mjs|py|sh|ts))")
 RE_TAG = re.compile(r"<(system-reminder|command-[a-z-]+|local-command-[a-z]+)>.*?</\1>", re.S)
 NGU_CANH_DAI = 200_000
+NGU_CANH_USAGE = 150_000   # mốc /usage của Claude Code gọi "ngữ cảnh quá 150k"
+SONG_SONG_TOI_THIEU = 4    # /usage: "từ 4 phiên chạy song song"
+SONG_SONG_PHUT = 10        # ƯỚC: 2 phiên "song song" nếu cùng có lượt AI trong cùng một ô 10 phút (hãng chưa công bố cách tính)
+PHIEN_DAI_GIO = 8          # /usage: "phiên sống từ 8 giờ" (từ lượt đầu đến lượt cuối trong cửa sổ đo)
 MOC_LUOT = (1, 10, 50, 100, 200, 300, 500)
 
 
@@ -67,6 +71,7 @@ def do_tep(p):
     tin = {}  # bỏ trùng theo mã tin: giữ bản có out lớn nhất
     cong_cu, ket_qua, doc_tep = {}, collections.Counter(), collections.Counter()
     hook, nguoi = collections.Counter(), []
+    co_cong_cu = collections.defaultdict(set)  # mã tin → {"skill","mcp"} (cờ giữ riêng: dòng có tool_use có thể đến trước/sau dòng có usage)
     sleep_n, cwd, nen, stop_hook, anh = 0, "", 0, 0, 0
     kenh = collections.Counter()  # entrypoint: claude-desktop / cli / sdk-cli (máy tự chạy) / vscode…
     dau_tep = None  # giờ của tin đầu tiên trong TỆP (trước khi lọc cửa sổ)
@@ -109,6 +114,9 @@ def do_tep(p):
                 if isinstance(b, dict) and b.get("type") == "tool_use" and b.get("id") not in cong_cu:
                     inp = b.get("input") if isinstance(b.get("input"), dict) else {}
                     cong_cu[b["id"]] = b.get("name")
+                    kk = m.get("id") or o.get("uuid")
+                    if b.get("name") == "Skill" or str(b.get("name")).startswith("mcp__"):
+                        co_cong_cu[kk].add("skill" if b.get("name") == "Skill" else "mcp")
                     if b.get("name") == "Read" and inp.get("file_path"):
                         doc_tep[inp["file_path"]] += 1
                     if b.get("name") == "Bash" and RE_SLEEP.search(inp.get("command") or ""):
@@ -152,7 +160,12 @@ def do_tep(p):
     # Đổi model giữa phiên: mỗi model 1 cache riêng → lượt sau đổi phải ghi lại
     doi_model = [r for a, r in zip(ds, ds[1:]) if r["model"] != a["model"] and r["cc"] > 20_000]
     bat_dau_trong = dau_tep is not None and dau_tep >= D0  # phiên mở TRONG cửa sổ mới có lượt khởi động thật
-    return {"tong": tong, "theo_model": theo_model, "luot": len(ds), "khoi_dong": ngu_canh[0] if bat_dau_trong else None,
+    return {"cac_luot": [(r["ts"].timestamp(), tq(r, r["model"])) for r in ds], "dau_cuoi": (ds[0]["ts"].timestamp(), ds[-1]["ts"].timestamp()),
+            "tq_co_skill": sum(tq(r, r["model"]) for k_, r in tin.items() if "skill" in co_cong_cu.get(k_, ())),
+            "tq_co_mcp": sum(tq(r, r["model"]) for k_, r in tin.items() if "mcp" in co_cong_cu.get(k_, ())),
+            "luot_ngu_canh_150k": sum(x > NGU_CANH_USAGE for x in ngu_canh),
+            "tq_ngu_canh_150k": sum(tq(r, r["model"]) for r, x in zip(ds, ngu_canh) if x > NGU_CANH_USAGE),
+            "tong": tong, "theo_model": theo_model, "luot": len(ds), "khoi_dong": ngu_canh[0] if bat_dau_trong else None,
             "ngu_canh_max": max(ngu_canh), "luot_ngu_canh_dai": sum(x > NGU_CANH_DAI for x in ngu_canh),
             "tq_ngu_canh_dai": sum(tq(r, r["model"]) for r, x in zip(ds, ngu_canh) if x > NGU_CANH_DAI),
             "phan": {"doc_lai": sum(he_so_doc(r["model"]) * r["cr"] for r in ds),
@@ -232,6 +245,22 @@ def nguon_luot(o, t):
     return "khác"
 
 
+def tq_song_song(luot_theo_phien, toi_thieu=SONG_SONG_TOI_THIEU, phut=SONG_SONG_PHUT):
+    """tq của các lượt AI xảy ra lúc có ≥ toi_thieu phiên khác nhau cùng hoạt động (cùng ô `phut` phút).
+    luot_theo_phien: {mã phiên: [(giờ epoch, tq), ...]} (gồm cả lượt trợ lý con, tính vào phiên cha)."""
+    o = collections.defaultdict(set)
+    for sid, ls in luot_theo_phien.items():
+        for e, _ in ls:
+            o[int(e // (phut * 60))].add(sid)
+    return sum(t for ls in luot_theo_phien.values() for e, t in ls if len(o[int(e // (phut * 60))]) >= toi_thieu)
+
+
+def tq_phien_dai(khoang, tq_phien, gio=PHIEN_DAI_GIO):
+    """tq (cả trợ lý con) của các phiên chính có khoảng từ lượt đầu đến lượt cuối ≥ gio giờ.
+    khoang: {mã phiên: (đầu, cuối) tính bằng giây epoch}; tq_phien: {mã phiên: tq cả phiên}."""
+    return sum(tq_phien.get(sid, 0.0) for sid, (a, b) in khoang.items() if b - a >= gio * 3600)
+
+
 def loai_con(p):
     try:
         return json.loads(p.with_suffix(".meta.json").read_text(encoding="utf-8")).get("agentType") or "?"
@@ -255,6 +284,8 @@ def main():
     theo_nguon = collections.Counter()  # ai khởi đầu lượt (chỉ phiên chính)
     bo_qua = 0  # số tệp nhật ký lạ phải bỏ qua
     out_model = collections.defaultdict(collections.Counter)  # out + số lượt theo model (mọi tệp)
+    luot_theo_phien, khoang_phien = collections.defaultdict(list), {}  # cho "song song" và "phiên sống từ 8 giờ"
+    luot150, tq150, tq_skill, tq_mcp = 0, 0.0, 0.0, 0.0
     for p in GOC.glob("**/*.jsonl"):
         try:
             if p.stat().st_mtime < cut:
@@ -276,6 +307,13 @@ def main():
             out_model[mo]["out"] += u["out"]
             out_model[mo]["n"] += u["n"]
         tq_tong += t
+        luot_theo_phien[sid] += r["cac_luot"]
+        if not la_con:
+            khoang_phien[sid] = r["dau_cuoi"]
+            luot150 += r["luot_ngu_canh_150k"]
+            tq150 += r["tq_ngu_canh_150k"]
+            tq_skill += r["tq_co_skill"]
+            tq_mcp += r["tq_co_mcp"]
         (tong_con if la_con else tong_chinh).update({a: r["tong"][a] for a in ("cc", "cr", "in")})
         phan.update(r["phan"])
         tk_doc += r["tk_doc_lai"]
@@ -337,6 +375,9 @@ def main():
     theo_du_an = collections.Counter()
     for v in phien.values():
         theo_du_an[v["du_an"]] += v["tq_ca_phien"]
+    tq_ph = {sid: v["tq_chinh"] + v["tq_con"] for sid, v in phien.items()}
+    song_song_tq = tq_song_song(luot_theo_phien)
+    phien_dai_tq = tq_phien_dai(khoang_phien, tq_ph)
     kd = sorted(v["khoi_dong"] for v in chinh if v["khoi_dong"] is not None) or [0]
     ket = {
         "cua_so": f"{D0:%Y-%m-%d %H:%M} → {D1:%Y-%m-%d %H:%M} UTC ({N} ngày)",
@@ -344,6 +385,8 @@ def main():
         "tong_token": dict(tong), "tq_tong": tq_tong, "tq_tro_ly_con": tq_con,
         "so_phien_chinh": len(chinh), "so_tro_ly_con": sum(v["so_con"] for v in phien.values()),
         "khoi_dong_trung_vi": kd[len(kd) // 2], "khoi_dong_tq_tong": kd_tq, "phien_cat_ngang_cua_so": sum(v["khoi_dong"] is None for v in chinh),
+        "luot_ngu_canh_150k": luot150, "tq_ngu_canh_150k": tq150,
+        "tq_luot_co_skill": tq_skill, "tq_luot_co_mcp": tq_mcp, "tq_song_song_4": song_song_tq, "tq_phien_song_8_gio": phien_dai_tq,
         "luot_ngu_canh_dai": sum(v["luot_ngu_canh_dai"] for v in chinh),
         "tq_ngu_canh_dai": sum(v["tq_ngu_canh_dai"] for v in chinh),
         "ti_le_trung_dem": {"chinh": 100 * tong_chinh["cr"] / max(sum(tong_chinh.values()), 1),
@@ -416,6 +459,12 @@ def in_bang(k):
     print("8. **Phiên chính theo model** (tq): " + " · ".join(f"{m} {M(x)}" for m, x in k["phien_chinh_theo_model"].items()))
     if any(m.startswith("fable") for m in k["phien_chinh_theo_model"]):
         print("   (ƯỚC: mọi bản fable đang tính giá nhớ tạm của Fable 5.2, 0,025×; chưa có bảng giá riêng từng bản.)")
+    print(f"\n**Khớp cách gọi của `/usage` (Claude Code), % trên tổng tq — số ƯỚC theo tq, không trùng từng con số của hãng; các dòng chồng nhau, KHÔNG cộng):**")
+    print(f"- Khi ngữ cảnh quá {NGU_CANH_USAGE // 1000}k: {k['luot_ngu_canh_150k']:,} lượt, {pct(k['tq_ngu_canh_150k'])}")
+    print(f"- Khi có từ {SONG_SONG_TOI_THIEU} phiên chạy song song (cùng có lượt AI trong cùng {SONG_SONG_PHUT} phút): {pct(k['tq_song_song_4'])}")
+    print(f"- Ở phiên sống từ {PHIEN_DAI_GIO} giờ (từ lượt đầu đến lượt cuối trong cửa sổ đo; gồm trợ lý con của phiên): {pct(k['tq_phien_song_8_gio'])}")
+    print(f"- Phần nạp sẵn (lượt khởi động phiên): {pct(k['khoi_dong_tq_tong'])} · Trợ lý con: {pct(k['tq_tro_ly_con'])}")
+    print(f"- Lượt AI có gọi skill: {pct(k['tq_luot_co_skill'])} · có gọi công cụ MCP: {pct(k['tq_luot_co_mcp'])} (tính cả lượt đó, ước; chỉ phiên chính)\n")
     print()
     tl = k["tien_theo_loai_tq"]
     print("## Tiền đi đâu (theo loại token)")

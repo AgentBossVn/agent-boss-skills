@@ -207,6 +207,13 @@ Bạn cần:
 - Python 3.8 trở lên.
 - Không cần cài thêm gì.
 
+### Bản 0.11 (bản thử) có gì mới
+
+- Claude Code đã có sẵn `/usage` và `/insights`. Skill không làm lại phần đó và cũng không bắt bạn chạy rồi dán kết quả: nó tự tính các số tương đương từ nhật ký, đặt tên giống bảng của Claude Code để bạn đối chiếu nếu muốn.
+- Skill đo thêm: bao nhiêu phần token tốn khi có từ 4 phiên chạy song song, ở phiên mở từ 8 giờ trở lên, và khi ngữ cảnh vượt 150 nghìn token.
+- Nếu máy bạn đã có báo cáo `/insights`, skill tự đọc và so từng gợi ý của Claude Code với luật, hook, skill bạn đã có. Gợi ý nào bạn đã làm rồi hoặc trái điều bạn đã chốt thì bỏ; chỉ giữ gợi ý thật sự mới. Chưa có báo cáo thì bỏ qua.
+- Hai thói quen mới trong danh mục: luật viết bằng chữ mà agent vẫn quên thì nên đổi thành chốt chặn tự động, đừng viết thêm chữ; và việc agent làm sai hướng hay hiểu sai rồi phải làm lại, kèm cách phòng.
+
 ### Bản 0.10 (bản thử) có gì mới
 
 - Cách tiết kiệm token lớn nhất là đừng bắt Agent tự làm mọi việc. Những việc chưa rõ cách làm, cần tự quyết và tự sửa thì giao cho Agent; những việc đã có cách làm rõ ràng như đọc nhiều tệp, đối chiếu, cộng số, chép lời video hoặc đọc chữ trong ảnh thì bạn có thể bảo Agent viết một công cụ rồi chạy công cụ đó. Cách này không tốn token, chính xác và lần nào cũng cho cùng một kết quả.

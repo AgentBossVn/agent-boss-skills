@@ -35,6 +35,14 @@ Nguồn chính hãng (Anthropic, Cursor, OpenAI, Google) xếp trên blog/vendor
 8. **"Tinh chỉnh model nhỏ luôn rẻ hơn 90%."** Toàn ca tự báo cáo, một tác vụ, dữ liệu dạy do model lớn sinh; không tìm được ca kiểm toán độc lập.
 9. **"Tăng ngữ cảnh 1M là miễn phí."** Chroma: kém tin cậy khi dài; cache cũng cần giữ nóng (xem tầng 2 khung).
 
+## D. Công cụ Anthropic ĐÃ CÓ SẴN trong Claude Code (đừng làm lại; tra 26/11/2026)
+Nguồn: https://code.claude.com/docs/en/costs (số bản ghi theo trang hiện hành; máy tác giả bản 2.1.332).
+- **`/usage`**: chia lượt dùng theo skill, trợ lý con, plugin, MCP; nêu gợi ý sửa những thói quen chiếm từ 10%; phím `f` để Claude tự áp gợi ý (từ v2.1.305). Có dòng **Prompt cache** cho biết cache trúng/trượt (từ v2.1.251). Số lấy từ lịch sử máy này.
+- **`/insights`**: xuất báo cáo HTML về cách làm việc (vướng ở đâu, gợi ý thêm vào CLAUDE.md, tính năng nên thử); tệp ở `~/.claude/usage-data/report*.html`; chạy tốn token.
+- Ví dụ thật (tác giả, 26/11/2026): `/usage` 7 ngày cho thấy 80% lượt ở phiên giao nhiều trợ lý con, 77% khi ngữ cảnh quá 150k, 59% khi có từ 4 phiên song song, 38% ở phiên sống từ 8 giờ, 36% là phần nạp sẵn; `/insights` đếm làm sai hướng 25 lần, hiểu sai yêu cầu 12 lần.
+- **Giới hạn của chúng (chỗ skill này khác):** chỉ Claude Code (không Codex, không agent khác); không đo "việc nào nên viết công cụ" (tầng 0); không nhìn sản phẩm gọi API (tầng 7); không so trước/sau; không đối chiếu với luật/hook người dùng đã có (quan sát: khoảng một nửa gợi ý CLAUDE.md của `/insights` trên máy tác giả là luật đã có, hoặc trái quyết định đã chốt như bật gộp tự động); báo cáo bằng tiếng người dùng kỹ thuật.
+- Cách dùng trong skill: SKILL.md Bước 0c (máy tự tính số tương đương và tự đọc báo cáo `/insights` nếu có; không bắt người dùng chạy rồi dán).
+
 ## Hạn chế
 - Không tìm được thử nghiệm đối chứng độc lập cho CLI-tool lọc, router thực tế, fine-tune; Codex/Gemini CLI/Aider/Cline/Devin: chưa tìm được bài kỹ thuật riêng về tiết kiệm token. Bài Trung/Nhật chỉ tìm thấy bản chép lại, không có số đo gốc (Nhật: atmarkit dịch lại Cursor).
 - Báo cáo dựa trên tóm tắt công cụ tìm kiếm cho một số mục (RouteLLM, caveman, semantic cache); số liệu đó đã ghi rõ thứ cấp.

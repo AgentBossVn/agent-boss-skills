@@ -2,6 +2,14 @@
 
 Số bản: `A.B.C` — C sửa lỗi nhỏ, B thêm phép đo / mục báo cáo, A đổi cách dùng. Bản 1.0 khi: chạy thật trên đủ Mac + Windows + Linux, ≥5 người khác nhau dùng, ≥1 người không rành kỹ thuật đọc hiểu báo cáo, không còn lỗi lớn mở.
 
+## 0.11.0 — 26/11/2026 (bản thử)
+- **Nối với công cụ của hãng (Bước 0c), không bắt người dùng chạy lệnh dán kết quả:** số tương đương `/usage` máy tự tính từ nhật ký, nhãn giống bảng của hãng; báo cáo `/insights` nếu đã có thì máy tự tìm và đọc (`doc-bao-cao-insights.py`: số phiên, số lần làm sai hướng / hiểu sai, từng gợi ý), chưa có thì bỏ qua và chỉ gợi ý 1 dòng. Không tự chạy `/insights` (tốn lượt).
+- **Đối chiếu gợi ý của hãng** với luật, hook, skill người dùng đã có: đã có sẵn / trái luật đã chốt / thật sự mới; báo cáo có thêm mục này.
+- **Phép đo khớp `/usage`** (dòng "Khớp cách gọi của `/usage`" trong thoi-quen.md + khoá JSON `tq_ngu_canh_150k`, `tq_song_song_4`, `tq_phien_song_8_gio`): % tq khi ngữ cảnh quá 150k · khi có từ 4 phiên chạy song song · ở phiên sống từ 8 giờ (kèm tq lượt có gọi skill / MCP). Đếm từ nhật ký thật. Thêm tq lượt có gọi skill / công cụ MCP (ước). Phần nạp sẵn và trợ lý con dùng lại số có sẵn, đổi nhãn cho trùng.
+- Danh mục: thói quen #39 (luật bằng chữ đã có mà vẫn bị vi phạm → chuyển thành máy chặn, đừng viết thêm chữ) và #40 (làm sai hướng / hiểu sai rồi làm lại, lấy số từ `/insights`, cách phòng).
+- "Thế giới nói gì" thêm mục D: công cụ Anthropic đã có sẵn + chỗ skill này khác (nguồn code.claude.com/docs/en/costs).
+- Bộ kiểm: thêm `tests/test_do_theo_usage.py` (47 bài); thêm nhật ký mẫu `tests/mau` vào kho riêng của người viết (trước chỉ có ở kho công khai).
+
 ## 0.10.0 — 26/11/2026 (bản thử)
 - **Tư duy gốc mới ở đầu skill:** agent làm việc CHƯA RÕ cách làm (tự quyết, tự sửa); việc ĐÃ RÕ cách làm thì bảo agent viết công cụ rồi chạy công cụ — 0 token, chính xác, lần nào cũng ra y hệt. Áp cho cả việc lặp lẫn việc làm 1 lần mà nặng.
 - Máy mới `do-viec-nen-viet-may.py` (tầng 0), `chay` tự gọi, 4 mục: việc giao lặp ≥3 lần (người giao, máy tự chạy, trợ lý con) · phiên AI đọc nhiều dữ liệu (≥15 tệp hoặc ≥300 nghìn ký tự) · việc nặng có công cụ miễn phí (AI tự đọc video/âm thanh/ảnh/PDF/tệp Office/link video) · cấu hình máy + công cụ đã cài.

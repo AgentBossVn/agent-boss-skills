@@ -53,6 +53,28 @@ class ViecNenVietMay(unittest.TestCase):
             self.assertNotIn("fanpage", (Path(tmp) / "kq.json").read_text(encoding="utf-8"))
             self.assertNotIn("Background (from", r.stdout)
 
+    def test_doc_nhieu_va_viec_nang(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            d = Path(tmp) / "projects" / "ke-toan"
+            d.mkdir(parents=True)
+            doc = [{"type": "tool_use", "id": f"t{i}", "name": "Read", "input": {"file_path": f"/hd/hoa-don-{i}.pdf"}} for i in range(16)]
+            doc.append({"type": "tool_use", "id": "v", "name": "WebFetch", "input": {"url": "https://youtu.be/abc"}})
+            dong = [{"type": "user", "timestamp": GIO, "message": {"role": "user", "content": "Cộng 16 hoá đơn của khách bí mật"}},
+                    {"type": "assistant", "timestamp": GIO, "message": {"id": "m1", "model": "claude-sonnet-5-5", "content": doc,
+                     "usage": {"input_tokens": 0, "output_tokens": 50}}},
+                    {"type": "user", "timestamp": GIO, "message": {"role": "user", "content": [
+                        {"type": "tool_result", "tool_use_id": "t0", "content": "x" * 10}]}}]
+            (d / "s.jsonl").write_text("\n".join(json.dumps(x, ensure_ascii=False) for x in dong) + "\n", encoding="utf-8")
+            r = chay(tmp, "--json", str(Path(tmp) / "kq.json"))
+            self.assertEqual(r.returncode, 0, r.stderr)
+            kq = json.loads((Path(tmp) / "kq.json").read_text(encoding="utf-8"))
+            self.assertEqual(kq["phien_doc_nhieu"]["so_phien"], 1)
+            self.assertEqual(kq["phien_doc_nhieu"]["top"][0]["so_tep"], 16)
+            nang = {x["loai"]: x["so_lan"] for x in kq["viec_nang_mot_lan"]}
+            self.assertEqual(nang, {"PDF": 16, "link video": 1})
+            self.assertIn("ram_gb", kq["may"])
+            self.assertNotIn("bí mật", r.stdout + json.dumps(kq, ensure_ascii=False))
+
     def test_sai_thu_muc_bao_loi(self):
         with tempfile.TemporaryDirectory() as tmp:
             self.assertNotEqual(chay(Path(tmp) / "khong-co").returncode, 0)

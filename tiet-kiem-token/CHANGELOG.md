@@ -3,9 +3,10 @@
 Số bản: `A.B.C` — C sửa lỗi nhỏ, B thêm phép đo / mục báo cáo, A đổi cách dùng. Bản 1.0 khi: chạy thật trên đủ Mac + Windows + Linux, ≥5 người khác nhau dùng, ≥1 người không rành kỹ thuật đọc hiểu báo cáo, không còn lỗi lớn mở.
 
 ## 0.10.0 — 26/11/2026 (bản thử)
-- Máy mới `do-viec-nen-viet-may.py` (tầng 0): tìm việc giao lặp lại ≥3 lần — phiên người giao, máy tự chạy `claude -p`, trợ lý con — kèm số lần và tq mỗi lần. `chay` tự gọi.
-- Bước 2c bắt buộc: agent xếp từng việc lặp vào 3 loại (theo luật → viết script 0 token · phần lớn theo luật → script + AI rẻ đúng khúc · cần phán đoán → giữ AI), ước hoà vốn, đề xuất công cụ cụ thể.
-- Danh mục thêm thói quen #38: giao AI làm lại việc theo luật cố định.
+- **Tư duy gốc mới ở đầu skill:** agent làm việc CHƯA RÕ cách làm (tự quyết, tự sửa); việc ĐÃ RÕ cách làm thì bảo agent viết công cụ rồi chạy công cụ — 0 token, chính xác, lần nào cũng ra y hệt. Áp cho cả việc lặp lẫn việc làm 1 lần mà nặng.
+- Máy mới `do-viec-nen-viet-may.py` (tầng 0), `chay` tự gọi, 4 mục: việc giao lặp ≥3 lần (người giao, máy tự chạy, trợ lý con) · phiên AI đọc nhiều dữ liệu (≥15 tệp hoặc ≥300 nghìn ký tự) · việc nặng có công cụ miễn phí (AI tự đọc video/âm thanh/ảnh/PDF/tệp Office/link video) · cấu hình máy + công cụ đã cài.
+- Bước 2c bắt buộc: hỏi "cách làm đã rõ chưa?", xếp A (viết công cụ) / B (công cụ + AI đúng khúc) / C (để agent), kiểm máy chạy nổi, ước hoà vốn, đề xuất công cụ cụ thể.
+- Danh mục thêm thói quen #38: bắt agent tự làm việc đã rõ cách làm.
 
 ## 0.9.0 — 23/11/2026 (bản thử)
 - Đo **ai khởi đầu từng lượt AI**: người gõ / trợ lý con báo về / chốt bắt làm lại / máy tự chạy / plugin — mỗi lượt đọc lại cả phiên.

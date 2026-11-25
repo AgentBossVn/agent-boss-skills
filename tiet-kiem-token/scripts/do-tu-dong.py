@@ -123,6 +123,7 @@ def chay():
     if "claude" in da_do:
         chay_py("tach-luot-dau-phien.py", "--json", str(out / "tach-luot-dau.json"), ra=out / "tach-luot-dau.md")
         chay_py("do-phan-nap-san.py", "--du-an", str(Path.home()), "--json", str(out / "so-lieu-nap-san.json"), ra=out / "nap-san.md")
+        chay_py("do-viec-nen-viet-may.py", "--ngay", str(A.ngay), "--json", str(out / "viec-nen-viet-may.json"), ra=out / "viec-nen-viet-may.md")
         chua_giai_thich(out)
     for agent, may, js, md in viec:
         if agent not in da_do:

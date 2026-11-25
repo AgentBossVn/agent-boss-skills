@@ -207,6 +207,13 @@ Bạn cần:
 - Python 3.8 trở lên.
 - Không cần cài thêm gì.
 
+### Bản 0.10 (bản thử) có gì mới
+
+- Cách tiết kiệm token lớn nhất là đừng bắt Agent tự làm mọi việc. Những việc chưa rõ cách làm, cần tự quyết và tự sửa thì giao cho Agent; những việc đã có cách làm rõ ràng như đọc nhiều tệp, đối chiếu, cộng số, chép lời video hoặc đọc chữ trong ảnh thì bạn có thể bảo Agent viết một công cụ rồi chạy công cụ đó. Cách này không tốn token, chính xác và lần nào cũng cho cùng một kết quả.
+- Cách làm này áp dụng cho cả việc lặp lại và việc chỉ làm một lần nhưng nặng. Ví dụ, thay vì để Agent tự đọc 200 hóa đơn rồi cộng theo nhà cung cấp, bạn có thể bảo Agent viết công cụ đọc cả thư mục hóa đơn và tự cộng; với video dài, Agent có thể dựng Whisper để chép lời ngay trên máy.
+- Skill tự xem nhật ký để tìm những việc bạn giao nhiều lần, những phiên AI phải đọc nhiều dữ liệu, hoặc những lần AI tự đọc video, ảnh, PDF và bảng tính. Skill cũng kiểm tra xem máy của bạn có chạy được công cụ miễn phí phù hợp hay không.
+- Trước khi viết công cụ, Agent sẽ ước tính thời gian cần thiết để phần công sức bỏ ra được bù lại bằng lượng token tiết kiệm. Agent chỉ bắt đầu viết khi bạn đồng ý.
+
 ### Bản 0.9 (bản thử) có gì mới
 
 - Đo được nhật ký của cả Codex và Claude Code. Với các Agent khác như Gemini CLI, Antigravity... bạn chỉ dùng được phần dò code, vì skill chưa đo được nhật ký.

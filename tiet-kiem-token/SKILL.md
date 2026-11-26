@@ -3,7 +3,7 @@ name: tiet-kiem-token
 description: "Kiểm kê token/tiền AI từ việc làm THẬT, đủ 9 tầng: việc nào nên bảo agent viết công cụ (0 token, chính xác) thay vì tự làm, model, ngữ cảnh, công cụ, trợ lý con, cách giao việc, máy tự chạy, sản phẩm gọi API, đo và canh. Nối với /usage và /insights của hãng (không làm lại, đối chiếu với luật/hook người dùng đã có). Đo nhật ký Claude Code + Codex, đề xuất sửa có nguồn, sửa khi được duyệt, trang theo dõi + lịch tự đo 7 ngày so trước/sau. Agent nào cũng dùng được. Hay nói: 'kiểm kê token', 'sao hết lượt nhanh thế', 'tiết kiệm token', 'tốn token ở đâu'. Khác /tu-soi (soi lỗi làm việc), /usage (số tổng)."
 metadata:
   author: Mai Xuân Đạt — Agent Boss
-  version: "0.11.0"
+  version: "0.11.1"
 ---
 
 # /tiet-kiem-token — kiểm kê và đề xuất tiết kiệm token từ việc làm thật
@@ -130,6 +130,7 @@ Luật trung thực:
 ## Bước 4 — Sửa có duyệt (khi người dùng gật)
 Agent tự làm, theo thứ tự: liệt kê từng thay đổi + ƯỚC bớt → người dùng chọn → **sao lưu tệp sắp sửa** (chép sang `~/tiet-kiem-token/sao-luu/<ngày>/`) → sửa → kiểm agent vẫn chạy (mở phiên mới, làm 1 việc thường ngày) → ghi sổ: `python3 "$S/do-tu-dong.py" ghi-thay-doi "<việc đã đổi>"` → nói rõ cách hoàn tác (chép bản sao lưu về).
 - Được tự sửa khi đã duyệt: rút gọn tệp nạp sẵn mỗi phiên (CLAUDE.md, AGENTS.md, quy tắc) bằng cách dời chi tiết ra tệp con, tắt MCP không dùng, đổi model trợ lý con / máy tự chạy cho việc nhẹ, sửa lệnh chờ kiểu ngủ-rồi-hỏi.
+- **Tắt / cấm công cụ hay MCP (kể cả cài máy tự cấm công cụ ít dùng như TokenEconomizer `toolprune`):** "ít dùng" KHÔNG có nghĩa là "không cần". TRƯỚC khi tắt, dò tên công cụ trong mọi skill, agent, quy tắc của người dùng (`rg -l "<TênCôngCụ>" ~/.claude/skills ~/.claude/agents ~/.claude/rules .claude`); có skill nhắc tới thì KHÔNG tắt. Cài máy tự cấm thì đặt sẵn danh sách không bao giờ cấm cho các công cụ skill cần (TokenEconomizer: `te config set toolprune_protect=<tên,…> --global`). Chuyện thật 27/11/2026: máy cấm `ArtifactData` vì ít dùng → skill tạo bảng việc đăng trang xong mà không đọc được câu trả lời.
 - KHÔNG tự làm dù được bảo chung chung — phải nói rõ hậu quả rồi chờ gật riêng: xoá trí nhớ, tắt chốt/hook bảo vệ, đổi model của bot đang phục vụ khách, đổi model mặc định của cả hệ.
 - Hạ model cho sản phẩm gọi API (tầng 7): TRƯỚC khi đổi, lấy ≥20 câu hỏi thật của khách, chạy model cũ và mới, chấm đúng/sai, so **tiền trên mỗi câu trả lời đúng** chứ không chỉ tiền mỗi câu. Tỉ lệ đúng tụt rõ → không đổi, dù rẻ hơn.
 

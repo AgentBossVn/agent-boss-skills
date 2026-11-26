@@ -2,6 +2,9 @@
 
 Số bản: `A.B.C` — C sửa lỗi nhỏ, B thêm phép đo / mục báo cáo, A đổi cách dùng. Bản 1.0 khi: chạy thật trên đủ Mac + Windows + Linux, ≥5 người khác nhau dùng, ≥1 người không rành kỹ thuật đọc hiểu báo cáo, không còn lỗi lớn mở.
 
+## 0.11.1 — 27/11/2026 (bản thử)
+- **Không tắt / cấm công cụ mà skill cần:** trước khi tắt công cụ hay MCP "ít dùng" (kể cả cài máy tự cấm như TokenEconomizer `toolprune`), dò tên công cụ trong skill, agent, quy tắc của người dùng; có skill nhắc tới thì không tắt; cài máy tự cấm thì đặt sẵn danh sách không bao giờ cấm. Chuyện thật: máy cấm `ArtifactData` vì ít dùng → skill tạo bảng việc không đọc được câu trả lời.
+
 ## 0.11.0 — 26/11/2026 (bản thử)
 - **Nối với công cụ của hãng (Bước 0c), không bắt người dùng chạy lệnh dán kết quả:** số tương đương `/usage` máy tự tính từ nhật ký, nhãn giống bảng của hãng; báo cáo `/insights` nếu đã có thì máy tự tìm và đọc (`doc-bao-cao-insights.py`: số phiên, số lần làm sai hướng / hiểu sai, từng gợi ý), chưa có thì bỏ qua và chỉ gợi ý 1 dòng. Không tự chạy `/insights` (tốn lượt).
 - **Đối chiếu gợi ý của hãng** với luật, hook, skill người dùng đã có: đã có sẵn / trái luật đã chốt / thật sự mới; báo cáo có thêm mục này.
